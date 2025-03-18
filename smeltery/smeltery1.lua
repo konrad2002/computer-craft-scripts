@@ -121,7 +121,7 @@ local function mainLoop()
                 State = 2
             end
         elseif State == 2 then
-            if ~isOperating then
+            if ~isOperating() then
                 rs.setBundledOutput(BUS, 0)
                 State = 0
             end
