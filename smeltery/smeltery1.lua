@@ -2,6 +2,19 @@ SMELTERY = "back"
 LAMP = "top"
 LEVER = "right"
 MONITOR = "monitor_0"
+BUS = "bottom"
+
+OUTPUTS = {
+    colors.pink,
+    colors.red,
+    colors.orange,
+    colors.yellow,
+    colors.lime,
+    colors.green,
+    colors.cyan,
+    colors.blue,
+    colors.lightBlue,
+}
 
 local sm = peripheral.wrap(SMELTERY)
 local m = peripheral.wrap(MONITOR)
@@ -43,7 +56,10 @@ end
 local function writeSmeltery()
     m.setCursorPos(2,8)
     m.clearLine()
-    if (isOperating()) then
+    if (State == 1) then
+        m.setTextColor(colors.yellow)
+        m.write("waiting")
+    elseif (State == 2) then
         m.setTextColor(colors.lime)
         m.write("operating")
     else
@@ -74,13 +90,16 @@ local function writeContent()
 
         if name ~= "" then
             m.setTextColor(colors.lightGray)
-            m.write("*", name)
+            m.write("*" .. name)
         else
             m.setTextColor(colors.gray)
             m.write("empty")
         end
     end
 end
+
+State = 0   -- state 0: emtpy, 1: waiting, 2: operating
+Latest = 0  -- latest ore: 0 - length
 
 local function mainLoop()
     writeStatus()
@@ -93,8 +112,22 @@ local function mainLoop()
         lamp(0)
     end
     if (isRunning()) then
+        if State == 0 then
+            Latest = ((Latest + 1) % #OUTPUTS)
+            rs.setBundledOutput(BUS, OUTPUTS[Latest + 1])
+            State = 1
+        elseif State == 1 then
+            if isOperating() then
+                State = 2
+            end
+        elseif State == 2 then
+            if ~isOperating then
+                rs.setBundledOutput(BUS, 0)
+                State = 0
+            end
+        end
     else
-        -- TODO turn off all
+        rs.setBundledOutput(BUS, 0)
     end
 end
 
