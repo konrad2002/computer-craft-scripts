@@ -27,11 +27,7 @@ local function isRunning()
     return rs.getAnalogInput(LEVER) > 0
 end
 
-local function isOperating()
-    if sm.getInfo().contents then
-        return true
-    end
-
+local function hasBlocks()
     local stacks = sm.getAllStacks()
     for _, t in pairs(stacks) do
         if t.all().display_name then
@@ -39,6 +35,14 @@ local function isOperating()
         end
     end
     return false
+end
+
+local function isOperating()
+    if sm.getInfo().contents then
+        return true
+    end
+
+    return hasBlocks()
 end
 
 local function writeStatus()
@@ -62,6 +66,9 @@ local function writeSmeltery()
     elseif (State == 2) then
         m.setTextColor(colors.lime)
         m.write("operating")
+    elseif (State == 3) then
+        m.setTextColor(colors.yellow)
+        m.write("emptying")
     else
         m.setTextColor(colors.gray)
         m.write("not operating")
@@ -98,7 +105,7 @@ local function writeContent()
     end
 end
 
-State = 0   -- state 0: emtpy, 1: waiting, 2: operating
+State = 0   -- state 0: emtpy, 1: waiting, 2: operating; 3: emptying
 Latest = 0  -- latest ore: 0 - length
 
 local function mainLoop()
@@ -117,10 +124,15 @@ local function mainLoop()
             rs.setBundledOutput(BUS, OUTPUTS[Latest + 1])
             State = 1
         elseif State == 1 then
-            if isOperating() then
+            if hasBlocks() then
                 State = 2
             end
         elseif State == 2 then
+            if not hasBlocks() then
+                rs.setBundledOutput(BUS, 0)
+                State = 3
+            end
+        elseif State == 3 then
             if not isOperating() then
                 rs.setBundledOutput(BUS, 0)
                 State = 0
