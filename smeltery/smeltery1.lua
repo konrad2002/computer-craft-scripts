@@ -21,7 +21,7 @@ end
 local function writeStatus()
     m.setCursorPos(2,5)
     m.clearLine()
-    if (isRunning) then
+    if (isRunning()) then
         m.setTextColor(colors.lime)
         m.write("active")
     else
@@ -33,7 +33,7 @@ end
 local function writeSmeltery()
     m.setCursorPos(2,8)
     m.clearLine()
-    if (isOperating) then
+    if (isOperating()) then
         m.setTextColor(colors.lime)
         m.write("operating")
     else
