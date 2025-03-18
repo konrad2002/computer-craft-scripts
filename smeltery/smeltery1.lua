@@ -14,6 +14,10 @@ local function isRunning()
     return rs.getAnalogInput(LEVER)
 end
 
+local function isOperating()
+    return sm.getInfo().contents
+end
+
 local function writeStatus()
     m.setCursorPos(2,5)
     m.clearLine()
@@ -26,10 +30,10 @@ local function writeStatus()
     end
 end
 
-local function writeSmeltery(status)
+local function writeSmeltery()
     m.setCursorPos(2,8)
     m.clearLine()
-    if (status == 1) then
+    if (isOperating) then
         m.setTextColor(colors.lime)
         m.write("operating")
     else
@@ -44,7 +48,7 @@ local function writeContent()
 
     local info = sm.getInfo()
 
-    if (info.contents) then
+    if info.contents then
         m.setTextColor(colors.lightGray)
         m.write(info.contents.rawName)
     else
@@ -54,7 +58,20 @@ local function writeContent()
 end
 
 local function mainLoop()
+    writeStatus()
+    local active = isRunning()
+    if (active) then
+        writeSmeltery()
+        writeContent()
 
+        if isOperating then
+            lamp(15)
+        else
+            lamp(0)
+        end
+    else
+        -- TODO turn off all
+    end
 end
 
 
@@ -73,7 +90,7 @@ local function main()
     m.setTextColor(colors.orange)
     m.write("Smeltery:")
 
-    writeSmeltery(0)
+    writeSmeltery()
 
     m.setCursorPos(2,10)
     m.setTextColor(colors.orange)
