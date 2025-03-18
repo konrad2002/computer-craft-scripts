@@ -11,11 +11,21 @@ local function lamp(state)
 end
 
 local function isRunning()
-    return rs.getAnalogInput(LEVER)
+    return rs.getAnalogInput(LEVER) > 0
 end
 
 local function isOperating()
-    return sm.getInfo().contents
+    if sm.getInfo().contents then
+        return true
+    end
+
+    local stacks = sm.getAllStacks()
+    for _, t in pairs(stacks) do
+        if t.all().display_name then
+            return true
+        end
+    end
+    return false
 end
 
 local function writeStatus()
@@ -43,32 +53,46 @@ local function writeSmeltery()
 end
 
 local function writeContent()
+    local info = sm.getInfo()
+    local stacks = sm.getAllStacks()
+
     m.setCursorPos(2,11)
     m.clearLine()
-
-    local info = sm.getInfo()
 
     if info.contents then
         m.setTextColor(colors.lightGray)
         m.write(info.contents.rawName)
     else
-        m.setTextColor(colors.gray)
-        m.write("empty")
+        local name = ""
+
+        for _, t in pairs(stacks) do
+            if t.all().display_name then
+                name = t.all().display_name
+                break
+            end
+        end
+
+        if name ~= "" then
+            m.setTextColor(colors.lightGray)
+            m.write("*" + name)
+        else
+            m.setTextColor(colors.gray)
+            m.write("empty")
+        end
     end
 end
 
 local function mainLoop()
     writeStatus()
-    local active = isRunning()
-    if (active) then
-        writeSmeltery()
-        writeContent()
+    writeSmeltery()
+    writeContent()
 
-        if isOperating then
-            lamp(15)
-        else
-            lamp(0)
-        end
+    if isOperating() then
+        lamp(15)
+    else
+        lamp(0)
+    end
+    if (isRunning()) then
     else
         -- TODO turn off all
     end
