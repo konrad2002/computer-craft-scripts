@@ -74,7 +74,7 @@ local function writeContent()
 
         if name ~= "" then
             m.setTextColor(colors.lightGray)
-            m.write("*" + name)
+            m.write("*", name)
         else
             m.setTextColor(colors.gray)
             m.write("empty")
