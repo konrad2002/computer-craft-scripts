@@ -1,2 +1,2 @@
 # computer-craft-scripts
-My personal of collection of Computer Craft scripts
+My personal collection of Computer Craft scripts
